@@ -1,5 +1,5 @@
 
-import { Controller, Post, Get, Param, Body, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
 import { CpfService } from './cpf.service';
 import { RequestDto } from './dto/request.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';

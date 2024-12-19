@@ -5,6 +5,7 @@ export declare class CpfController {
     constructor(cpfService: CpfService);
     listProdudts(requestDto: RequestDto): Promise<any>;
     consultarCpf(requestDto: RequestDto): Promise<any[]>;
-    consultarCpfBacth(requestDto: RequestDto): Promise<void>;
+    consultarCpfBatch(file: Express.Multer.File, requestDto: RequestDto): Promise<void>;
+    private parseCsv;
     downloadCsv(fileName: string, res: any): Promise<void>;
 }

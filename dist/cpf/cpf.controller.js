@@ -16,9 +16,10 @@ exports.CpfController = void 0;
 const common_1 = require("@nestjs/common");
 const cpf_service_1 = require("./cpf.service");
 const request_dto_1 = require("./dto/request.dto");
-const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const path = require("path");
 const fs = require("fs");
+const platform_express_1 = require("@nestjs/platform-express");
+const csvParser = require("csv-parser");
 let CpfController = class CpfController {
     constructor(cpfService) {
         this.cpfService = cpfService;
@@ -29,8 +30,30 @@ let CpfController = class CpfController {
     async consultarCpf(requestDto) {
         return await this.cpfService.processCpfListAndConsultExternalApi(requestDto.cpfList, requestDto.delay, requestDto.timeout, requestDto.rateLimitPoints, requestDto.rateLimitDuration, requestDto.productName);
     }
-    async consultarCpfBacth(requestDto) {
-        return await this.cpfService.processCpfBatchAndConsultExternalApi(requestDto.cpfList, requestDto.delay, requestDto.timeout, requestDto.rateLimitPoints, requestDto.rateLimitDuration, requestDto.productName);
+    async consultarCpfBatch(file, requestDto) {
+        if (!file) {
+            throw new Error('File is required');
+        }
+        const cpfs = await this.parseCsv(file);
+        return await this.cpfService.processCpfBatchAndConsultExternalApi();
+    }
+    async parseCsv(file) {
+        return new Promise((resolve, reject) => {
+            const cpfs = [];
+            const stream = fs.createReadStream(file.path)
+                .pipe(csvParser())
+                .on('data', (row) => {
+                if (row.cpf) {
+                    cpfs.push(row.cpf);
+                }
+            })
+                .on('end', () => {
+                resolve(cpfs);
+            })
+                .on('error', (error) => {
+                reject(error);
+            });
+        });
     }
     async downloadCsv(fileName, res) {
         const filePath = path.join(__dirname, '../../exports', fileName);
@@ -52,20 +75,20 @@ __decorate([
 ], CpfController.prototype, "listProdudts", null);
 __decorate([
     (0, common_1.Post)('consultar-cpf'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [request_dto_1.RequestDto]),
     __metadata("design:returntype", Promise)
 ], CpfController.prototype, "consultarCpf", null);
 __decorate([
-    (0, common_1.Post)('consultar-bacth'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Body)()),
+    (0, common_1.Post)('consultar-batch'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    __param(0, (0, common_1.UploadedFile)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [request_dto_1.RequestDto]),
+    __metadata("design:paramtypes", [Object, request_dto_1.RequestDto]),
     __metadata("design:returntype", Promise)
-], CpfController.prototype, "consultarCpfBacth", null);
+], CpfController.prototype, "consultarCpfBatch", null);
 __decorate([
     (0, common_1.Get)('download-csv/:fileName'),
     __param(0, (0, common_1.Param)('fileName')),

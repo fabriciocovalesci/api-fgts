@@ -29,16 +29,19 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsNumber)(),
     (0, class_validator_1.Min)(1),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], RequestDto.prototype, "timeout", void 0);
 __decorate([
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(1),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], RequestDto.prototype, "rateLimitPoints", void 0);
 __decorate([
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(1),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
 ], RequestDto.prototype, "rateLimitDuration", void 0);
 __decorate([
