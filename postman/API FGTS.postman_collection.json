@@ -1,0 +1,228 @@
+{
+	"info": {
+		"_postman_id": "ab35eddd-9f37-497c-a6b4-e270b7988a7f",
+		"name": "API FGTS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28012990"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"const token = pm.response.json()",
+							"pm.environment.set(\"TOKEN_JWT\", token.access_token)"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"john\",\n    \"password\": \"123456\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/auth/login",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Register",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"const token = pm.response.json()",
+							"pm.environment.set(\"TOKEN_JWT\", token.access_token)"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"john3\",\n    \"email\": \"jon3@gmail.com\",\n    \"password\": \"123456\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/auth/register",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lista Produtos",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"timeout\": 3300,\n  \"delay\": 5000,\n  \"rateLimitPoints\": 10,\n  \"rateLimitDuration\": 60\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/fgts/produtos",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"fgts",
+						"produtos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consult CPF",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"cpfList\": [\"59028521615\", \"63040328972\", \"64441075120\"],\n  \"timeout\": 3300,\n  \"delay\": 5000,\n  \"rateLimitPoints\": 10,\n  \"rateLimitDuration\": 60,\n  \"productName\": \"Maffezzolli Alto\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/fgts/consultar-cpf",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"fgts",
+						"consultar-cpf"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consult CPF File",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"cpfList\": [\"59028521615\", \"63040328972\", \"64441075120\"],\n  \"timeout\": 4300,\n  \"delay\": 5,\n  \"rateLimitPoints\": 10,\n  \"rateLimitDuration\": 60,\n  \"productName\": \"Maffezzolli Alto\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/fgts/consultar-cpf",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"fgts",
+						"consultar-cpf"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Downlod file",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/fgts/download-csv/consultas-2024-12-19T07-18-16-682Z.csv",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"fgts",
+						"download-csv",
+						"consultas-2024-12-19T07-18-16-682Z.csv"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

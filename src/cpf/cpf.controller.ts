@@ -28,7 +28,7 @@ export class CpfController {
 
 
   @Post('consultar-cpf')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async consultarCpf(@Body() requestDto: RequestDto) {
     return await this.cpfService.processCpfListAndConsultExternalApi(
       requestDto.cpfList, 
@@ -42,7 +42,7 @@ export class CpfController {
 
 
   @Post('consultar-batch')
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async consultarCpfBatch(@UploadedFile() file: Express.Multer.File, @Body() requestDto: RequestDto) {
     if (!file) {
@@ -52,12 +52,12 @@ export class CpfController {
     const cpfs = await this.parseCsv(file);
 
     return await this.cpfService.processCpfBatchAndConsultExternalApi(
-      cpfs,
-      requestDto.delay,
-      requestDto.timeout,
-      requestDto.rateLimitPoints,
-      requestDto.rateLimitDuration,
-      requestDto.productName
+    //   cpfs,
+    //   requestDto.delay,
+    //   requestDto.timeout,
+    //   requestDto.rateLimitPoints,
+    //   requestDto.rateLimitDuration,
+    //   requestDto.productName
     );
   }
 
@@ -82,6 +82,7 @@ export class CpfController {
   }
 
   @Get('download-csv/:fileName')
+  // @UseGuards(JwtAuthGuard)
   async downloadCsv(@Param('fileName') fileName: string, @Res() res) {
     const filePath = path.join(__dirname, '../../exports', fileName);
     if (fs.existsSync(filePath)) {
