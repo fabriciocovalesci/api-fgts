@@ -44,8 +44,10 @@ export class HttpService {
   }
 
 
-  private async rateLimitedRequest(config: AxiosRequestConfig, delay: number = 0, rateLimitDuration: number = 60000) {
-    await this.delay(delay);
+  private async rateLimitedRequest(enableDelay: boolean, config: AxiosRequestConfig, delay: number = 0, rateLimitDuration: number = 60000) {
+    if(enableDelay){
+      await this.delay(delay);
+    }
 
     if (this.requestCount >= 10) {
       this.logger.error('Limite de requisições excedido');
@@ -77,6 +79,7 @@ export class HttpService {
 
 
   public async request(
+    enableDelay: boolean,
     method: string,
     url: string,
     data?: any,
@@ -105,23 +108,23 @@ export class HttpService {
       },
     };
     this.logger.log(`Fazendo requisição endpoint ${url} - ${method} - ${JSON.stringify(data)}`);
-    return this.rateLimitedRequest(requestConfig, delay, rateLimitDuration);
+    return this.rateLimitedRequest(enableDelay, requestConfig, delay, rateLimitDuration);
   }
 
 
-  public async get(url: string, config: AxiosRequestConfig = {}, delay: number = 0, timeout: number = 1000, rateLimitDuration: number = 60000) {
-    return this.request('GET', url, null, config, delay, timeout, rateLimitDuration);
+  public async get(enableDelay: boolean, url: string, config: AxiosRequestConfig = {}, delay: number = 0, timeout: number = 1000, rateLimitDuration: number = 60000) {
+    return this.request(enableDelay, 'GET', url, null, config, delay, timeout, rateLimitDuration);
   }
 
-  public async post(url: string, data: any, config: AxiosRequestConfig = {}, delay: number = 0, timeout: number = 1000, rateLimitDuration: number = 60000) {
-    return this.request('POST', url, data, config, delay, timeout, rateLimitDuration);
+  public async post(enableDelay: boolean, url: string, data: any, config: AxiosRequestConfig = {}, delay: number = 0, timeout: number = 1000, rateLimitDuration: number = 60000) {
+    return this.request(enableDelay, 'POST', url, data, config, delay, timeout, rateLimitDuration);
   }
 
-  public async put(url: string, data: any, config: AxiosRequestConfig = {}, delay: number = 0, timeout: number = 1000, rateLimitDuration: number = 60000) {
-    return this.request('PUT', url, data, config, delay, timeout, rateLimitDuration);
+  public async put(enableDelay: boolean, url: string, data: any, config: AxiosRequestConfig = {}, delay: number = 0, timeout: number = 1000, rateLimitDuration: number = 60000) {
+    return this.request(enableDelay, 'PUT', url, data, config, delay, timeout, rateLimitDuration);
   }
 
-  public async delete(url: string, config: AxiosRequestConfig = {}, delay: number = 0, timeout: number = 1000, rateLimitDuration: number = 60000) {
-    return this.request('DELETE', url, null, config, delay, timeout, rateLimitDuration);
+  public async delete(enableDelay: boolean, url: string, config: AxiosRequestConfig = {}, delay: number = 0, timeout: number = 1000, rateLimitDuration: number = 60000) {
+    return this.request(enableDelay, 'DELETE', url, null, config, delay, timeout, rateLimitDuration);
   }
 }

@@ -52,34 +52,36 @@ export class CpfController {
     const cpfs = await this.parseCsv(file);
 
     return await this.cpfService.processCpfBatchAndConsultExternalApi(
-      // cpfs,
-      // requestDto.delay,
-      // requestDto.timeout,
-      // requestDto.rateLimitPoints,
-      // requestDto.rateLimitDuration,
-      // requestDto.productName
+      cpfs,
+      requestDto.delay,
+      requestDto.timeout,
+      requestDto.rateLimitPoints,
+      requestDto.rateLimitDuration,
+      requestDto.productId,
+      requestDto.productMinimumInterestRate
     );
   }
 
 
   private async parseCsv(file: Express.Multer.File): Promise<string[]> {
     return new Promise((resolve, reject) => {
-      const cpfs: string[] = [];
+      const cpfs = new Set<string>();
       const stream = fs.createReadStream(file.path)
         .pipe(csvParser())
         .on('data', (row) => {
-          if (row.cpf) {
-            cpfs.push(row.cpf);
+          if (row.cpf && /^\d{11}$/.test(row.cpf)) {
+            cpfs.add(row.cpf.trim());
           }
         })
         .on('end', () => {
-          resolve(cpfs);
+          resolve(Array.from(cpfs));
         })
         .on('error', (error) => {
           reject(error);
         });
     });
   }
+  
 
   @Get('download-csv/:fileName')
   // @UseGuards(JwtAuthGuard)
@@ -92,3 +94,4 @@ export class CpfController {
     }
   }
 }
+

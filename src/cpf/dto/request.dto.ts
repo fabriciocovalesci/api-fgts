@@ -29,4 +29,12 @@ export class RequestDto {
   @IsString()
   @IsOptional()
   productName?: string;
+
+  @IsString()
+  @IsOptional()
+  productId?: string;
+
+  @IsNumber()
+  @IsOptional()
+  productMinimumInterestRate?: number;
 }

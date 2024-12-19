@@ -84,7 +84,56 @@ export class CpfService {
     return result;
   }
 
-  async processCpfBatchAndConsultExternalApi() {
-    // Implementar lógica
+  public async processCpfBatchAndConsultExternalApi(
+    cpfList: string[],
+    delay: number,
+    timeout: number,
+    rateLimitPoints: number,
+    rateLimitDuration: number,
+    productId: string,
+    productMinimumInterestRate: number
+  ) {
+    const validationResults = this.validateCpfListUseCase.validate(cpfList);
+    const validCpfs = validationResults.filter((result) => result.isValid).map((result) => result.cpf);
+  
+    if (validCpfs.length === 0) {
+      this.logger.error('Nenhum CPF válido encontrado');
+      throw new NoValidCpfException();
+    }
+  
+    const batchSize = 10;
+    let result = [];
+  
+    for (let i = 0; i < validCpfs.length; i += batchSize) {
+      const batch = validCpfs.slice(i, i + batchSize);
+  
+      this.logger.log(`Processing batch of CPFs: ${batch.join(', ')}`);
+  
+      const batchResults = await this.consultSimulation.simulationBatchFGTS(
+        productMinimumInterestRate,
+        productId,
+        batch,
+        timeout,
+        delay,
+        rateLimitPoints,
+        rateLimitDuration
+      );
+  
+      result.push(...batchResults);
+  
+      this.logger.log(`Batch of CPFs processed successfully: ${batch.join(', ')}`);
+  
+      if (i + batchSize < validCpfs.length) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const fileName = `consultas-batch-${timestamp}.csv`;
+    this.saveToCsv(result, fileName);
+  
+    this.logger.log('Todos os CPFs em lotes foram consultados com sucesso');
+    return { result, csvFile: fileName };
   }
+  
 }
