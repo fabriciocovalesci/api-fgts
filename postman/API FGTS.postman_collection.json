@@ -134,7 +134,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"cpfList\": [\"59028521615\", \"63040328972\", \"64441075120\"],\n  \"timeout\": 3300,\n  \"delay\": 5000,\n  \"rateLimitPoints\": 10,\n  \"rateLimitDuration\": 60,\n  \"productName\": \"Maffezzolli Alto\"\n}\n",
+					"raw": "{\n  \"cpfList\": [\"01261049055\", \"01642756490\", \"01642756490\"],\n  \"timeout\": 3300,\n  \"delay\": 2500,\n  \"rateLimitPoints\": 10,\n  \"rateLimitDuration\": 60,\n  \"productName\": \"Maffezzolli Alto\"\n}\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -166,22 +166,58 @@
 					}
 				],
 				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"cpfList\": [\"59028521615\", \"63040328972\", \"64441075120\"],\n  \"timeout\": 4300,\n  \"delay\": 5,\n  \"rateLimitPoints\": 10,\n  \"rateLimitDuration\": 60,\n  \"productName\": \"Maffezzolli Alto\"\n}\n",
-					"options": {
-						"raw": {
-							"language": "json"
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/fabricio.covalesci/Desktop/cpf-teste.csv"
+						},
+						{
+							"key": "delay",
+							"value": "3000",
+							"type": "text"
+						},
+						{
+							"key": "timeout",
+							"value": "3300",
+							"type": "text"
+						},
+						{
+							"key": "rateLimitPoints",
+							"value": "10",
+							"type": "text"
+						},
+						{
+							"key": "rateLimitDuration",
+							"value": "60",
+							"type": "text"
+						},
+						{
+							"key": "productId",
+							"value": "4ac16486-57aa-4c27-bdea-2e82d2a8c0fe",
+							"type": "text"
+						},
+						{
+							"key": "minimumInterestRate",
+							"value": "0.0179999999",
+							"type": "text"
+						},
+						{
+							"key": "batchSize",
+							"value": "5",
+							"type": "text"
 						}
-					}
+					]
 				},
 				"url": {
-					"raw": "{{BASE_URL}}/fgts/consultar-cpf",
+					"raw": "{{BASE_URL}}/fgts/consultar-batch",
 					"host": [
 						"{{BASE_URL}}"
 					],
 					"path": [
 						"fgts",
-						"consultar-cpf"
+						"consultar-batch"
 					]
 				}
 			},

@@ -1,5 +1,5 @@
 
-import { Controller, Post, Get, Param, Body, UseGuards, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards, UseInterceptors, UploadedFile, Res, Logger, BadRequestException } from '@nestjs/common';
 import { CpfService } from './cpf.service';
 import { RequestDto } from './dto/request.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -8,10 +8,12 @@ import * as fs from 'fs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as csvParser from 'csv-parser';
 import { Express } from 'express';
+import { Readable } from 'stream';
 
 
 @Controller('fgts')
 export class CpfController {
+  private readonly logger = new Logger(CpfController.name);
   constructor(private readonly cpfService: CpfService) {}
 
   @Post('produtos')
@@ -44,12 +46,17 @@ export class CpfController {
   @Post('consultar-batch')
   // @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  async consultarCpfBatch(@UploadedFile() file: Express.Multer.File, @Body() requestDto: RequestDto) {
+  async consultarCpfBatch(@UploadedFile() file: Express.Multer.File, @Body() requestDto: any) {
     if (!file) {
       throw new Error('File is required');
     }
 
+    this.logger.log(`File received: ${file.originalname}`);
+
     const cpfs = await this.parseCsv(file);
+    if (cpfs.length === 0) {
+      throw new BadRequestException('No valid CPFs found in file');
+    }
 
     return await this.cpfService.processCpfBatchAndConsultExternalApi(
       cpfs,
@@ -58,7 +65,8 @@ export class CpfController {
       requestDto.rateLimitPoints,
       requestDto.rateLimitDuration,
       requestDto.productId,
-      requestDto.productMinimumInterestRate
+      parseFloat(requestDto.minimumInterestRate),
+      requestDto.batchSize
     );
   }
 
@@ -66,11 +74,17 @@ export class CpfController {
   private async parseCsv(file: Express.Multer.File): Promise<string[]> {
     return new Promise((resolve, reject) => {
       const cpfs = new Set<string>();
-      const stream = fs.createReadStream(file.path)
+      const stream = Readable.from(file.buffer)
         .pipe(csvParser())
         .on('data', (row) => {
-          if (row.cpf && /^\d{11}$/.test(row.cpf)) {
-            cpfs.add(row.cpf.trim());
+          if (row.cpf) {
+            const normalizedCpf = /^\d{11}$/.test(row.cpf) 
+              ? row.cpf 
+              : row.cpf.replace(/\D/g, '');
+  
+            if (/^\d{11}$/.test(normalizedCpf)) {
+              cpfs.add(normalizedCpf);
+            }
           }
         })
         .on('end', () => {
@@ -81,6 +95,7 @@ export class CpfController {
         });
     });
   }
+  
   
 
   @Get('download-csv/:fileName')

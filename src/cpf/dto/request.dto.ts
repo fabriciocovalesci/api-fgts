@@ -36,5 +36,5 @@ export class RequestDto {
 
   @IsNumber()
   @IsOptional()
-  productMinimumInterestRate?: number;
+  minimumInterestRate?: number;
 }

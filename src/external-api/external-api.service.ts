@@ -124,20 +124,20 @@ export class ExternalApiService {
       return simulation;
     } catch (error) {
 
-      const errorMessage = error.response?.data?.message || error.message || 'Unknown error';
+      const errorMessage = error.response.message
       this.logger.error(`Error during FGTS simulation for CPF ${cpf}: ${errorMessage}`, error.stack);
   
       return {
         cpf,
         error: true,
         message: errorMessage,
-        statusCode: error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: error.response?.code || HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
   }
   
   public async simulationBatchFGTS(
-    productMinimumInterestRate: number,
+    minimumInterestRate: number,
     productId: string,
     cpfs: string[], 
     timeout: number, 
@@ -155,8 +155,8 @@ export class ExternalApiService {
             type: "Percentage",
             baseValue: "InitialValue",
           },
-          apr: productMinimumInterestRate,
-          termInMonths: 10,
+          apr: minimumInterestRate,
+          termInMonths: 5,
           startDate: new Date().toISOString(),
           requestedAmount: 0,
           amortizationType: "fgts",
@@ -182,14 +182,14 @@ export class ExternalApiService {
       return simulation;
     } catch (error) {
 
-      const errorMessage = error.response?.data?.message || error.message || 'Unknown error';
+      const errorMessage = error.response.message;
       this.logger.error(`Error during FGTS simulation for CPF : ${errorMessage}`, error.stack);
   
       return {
         cpfs,
         error: true,
         message: errorMessage,
-        statusCode: error.response?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: error.response?.code || HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }
   }
