@@ -125,7 +125,7 @@ export class CpfService {
     timeout: number, 
     rateLimitPoints: number, 
     rateLimitDuration: number,
-    productName: string
+    productId: string
   ) {
 
     const validationResults = this.validateCpfListUseCase.validate(cpfList);
@@ -140,7 +140,7 @@ export class CpfService {
 
     let result = [];
     for (const cpf of validCpfs) {
-      const data =  await this.consultSimulation.simulationFGTS(productName, cpf, timeout, delay, rateLimitPoints, rateLimitDuration);
+      const data =  await this.consultSimulation.simulationFGTS(productId, cpf, timeout, delay, rateLimitPoints, rateLimitDuration);
       this.logger.log(`CPF ${cpf} consultado com sucesso - ${data}`);
       result.push(data);
     }

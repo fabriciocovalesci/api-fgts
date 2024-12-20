@@ -38,7 +38,7 @@ export class CpfController {
       requestDto.timeout,
       requestDto.rateLimitPoints,
       requestDto.rateLimitDuration,
-      requestDto.productName
+      requestDto.productId
     );
   }
 

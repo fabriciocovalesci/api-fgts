@@ -40,8 +40,8 @@ export class ExternalApiService {
   }
 
 
-  public async getProductByNames(productName: string, timeout: number, delay: number, rateLimitPoints: number, rateLimitDuration: number): Promise<any> {
-    this.logger.log(`Searching for product ${productName}`);
+  public async getProductById(productId: string, timeout: number, delay: number, rateLimitPoints: number, rateLimitDuration: number): Promise<any> {
+    this.logger.log(`Searching for product ${productId}`);
     const listProducts = await this.httpService.get(
       false,
       `${this.enpoint}/v1/Product`,
@@ -50,12 +50,12 @@ export class ExternalApiService {
       timeout
     );
 
-    const product = listProducts?.data.find((product: any) => product.name === productName);
+    const product = listProducts?.data.find((product: any) => product.id === productId);
     if (!product) {
-      this.logger.error(`Product ${productName} not found`);
+      this.logger.error(`Product ${productId} not found`);
       throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
     }
-    this.logger.log(`Product ${productName} found`);
+    this.logger.log(`Product ${product.name} found`);
     return {
       id: product.id,
       minimumInterestRate: product.minimumInterestRate
@@ -79,7 +79,7 @@ export class ExternalApiService {
    * @returns A Promise that resolves to the simulation result.
    */
   public async simulationFGTS(
-    productName: string, 
+    productId: string, 
     cpf: string, 
     timeout: number, 
     delay: number, 
@@ -89,7 +89,7 @@ export class ExternalApiService {
     this.logger.log(`Simulating FGTS for CPF: ${cpf}`);
   
     try {
-      const product = await this.getProductByNames(productName, timeout, delay, rateLimitPoints, rateLimitDuration);
+      const product = await this.getProductById(productId, timeout, delay, rateLimitPoints, rateLimitDuration);
   
       const data = {
         amortization: {
