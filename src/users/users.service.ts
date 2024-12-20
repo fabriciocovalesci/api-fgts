@@ -34,11 +34,11 @@ export class UsersService {
   }
 
   async findById(id: string): Promise<User | null> {
-    return this.userModel.findById(id).exec();
+    return await this.userModel.findById(id);
   }
 
   async findByUsername(username: string): Promise<User | null> {
-    return this.userModel.findOne({ username }).exec();
+    return await this.userModel.findOne({ username });
   }
 
   async findByEmail(email: string): Promise<User | null> {
