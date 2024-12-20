@@ -45,7 +45,7 @@ export class CpfService {
         return formattedItem;
       });
   
-      const opts = { fields: fixedHeaders };
+      const opts = { fields: fixedHeaders, delimiter: ';' };
       const csv = parse(formattedData, opts);
   
       const filePath = path.join(__dirname, '../../exports', fileName);

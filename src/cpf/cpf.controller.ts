@@ -102,6 +102,7 @@ export class CpfController {
   @UseGuards(JwtAuthGuard)
   async downloadCsv(@Param('fileName') fileName: string, @Res() res) {
     const filePath = path.join(__dirname, '../../exports', fileName);
+    this.logger.log(`Download requested for file: ${filePath}`);
     if (fs.existsSync(filePath)) {
       res.download(filePath);
     } else {
