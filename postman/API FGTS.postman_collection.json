@@ -134,7 +134,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"cpfList\": [\"01261049055\", \"01642756490\", \"01642756490\"],\n  \"timeout\": 3300,\n  \"delay\": 2500,\n  \"rateLimitPoints\": 10,\n  \"rateLimitDuration\": 60,\n  \"productName\": \"Maffezzolli Alto\"\n}\n",
+					"raw": "{\n  \"cpfList\": [\"22486220070\", \"01642756490\", \"01642756490\"],\n  \"timeout\": 3000,\n  \"delay\": 1500,\n  \"rateLimitPoints\": 10,\n  \"rateLimitDuration\": 60,\n  \"productName\": \"Maffezzolli Alto\"\n}\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -175,12 +175,12 @@
 						},
 						{
 							"key": "delay",
-							"value": "3000",
+							"value": "1000",
 							"type": "text"
 						},
 						{
 							"key": "timeout",
-							"value": "3300",
+							"value": "6000",
 							"type": "text"
 						},
 						{
