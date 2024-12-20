@@ -127,12 +127,7 @@ export class ExternalApiService {
       const errorMessage = error.response.message
       this.logger.error(`Error during FGTS simulation for CPF ${cpf}: ${errorMessage}`, error.stack);
   
-      return {
-        cpf,
-        error: true,
-        message: errorMessage,
-        statusCode: error.response?.code || HttpStatus.INTERNAL_SERVER_ERROR,
-      };
+      return error.response
     }
   }
   
@@ -156,7 +151,7 @@ export class ExternalApiService {
             baseValue: "InitialValue",
           },
           apr: minimumInterestRate,
-          termInMonths: 5,
+          termInMonths: 10,
           startDate: new Date().toISOString(),
           requestedAmount: 0,
           amortizationType: "fgts",
@@ -181,14 +176,13 @@ export class ExternalApiService {
       this.logger.log(`Simulation FGTS for CPF ${batchData.length} completed successfully`);
       return simulation;
     } catch (error) {
-
+      this.logger.error(`Error during FGTS simulation for CPF2 : ${error}`);
       const errorMessage = error.response.message;
       this.logger.error(`Error during FGTS simulation for CPF : ${errorMessage}`, error.stack);
   
       return {
         cpfs,
-        error: true,
-        message: errorMessage,
+        error: error.response,
         statusCode: error.response?.code || HttpStatus.INTERNAL_SERVER_ERROR,
       };
     }

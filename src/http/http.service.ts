@@ -44,38 +44,38 @@ export class HttpService {
   }
 
 
-  private async rateLimitedRequest(enableDelay: boolean, config: AxiosRequestConfig, delay: number = 0, rateLimitDuration: number = 60000) {
-    if(enableDelay){
+  private async rateLimitedRequest(
+    enableDelay: boolean,
+    config: AxiosRequestConfig,
+    delay: number,
+    rateLimitDuration: number,
+    timeout: number
+  ) {
+    if (enableDelay) {
       await this.delay(delay);
     }
 
-    if (this.requestCount >= 10) {
-      this.logger.error('Limite de requisições excedido');
-      throw new HttpException('Limite de requisições excedido', HttpStatus.TOO_MANY_REQUESTS);
-    }
-
-    this.requestCount++;
-
-
-    setTimeout(() => {
-      this.requestCount = 0;
-    }, rateLimitDuration);
-
-
-      try {
-        const response = await axios(config);
-        return response.data;
-      } catch (error) {
-        this.logger.error(`Erro ao fazer requisição: ${error.message}`);
-        if (error.response) {
+    config.timeout = timeout;
+  
+    try {
+      const response = await axios(config);
+      return response.data;
+    } catch (error) {
+      this.logger.error(`Erro ao fazer requisição: ${error.message}`);
+  
+      if (error.response) {
         this.logger.error(`Status: ${error.response.status}, Data: ${JSON.stringify(error.response.data)}`);
-        return error.response.data;
-        // throw new HttpException(error.response.data, error.response.status);
-        } else {
-        throw new HttpException('Erro ao fazer requisição', HttpStatus.BAD_GATEWAY);
-        }
+        throw new HttpException(error.response.data, error.response.status);
       }
+  
+      if (error.code === 'ECONNABORTED') {
+        this.logger.error('Requisição expirou por timeout');
+        throw new HttpException('Timeout excedido', HttpStatus.GATEWAY_TIMEOUT);
+      }
+      throw new HttpException('Erro ao fazer requisição', HttpStatus.BAD_GATEWAY);
+    }
   }
+  
 
 
   public async request(
@@ -85,7 +85,7 @@ export class HttpService {
     data?: any,
     config: AxiosRequestConfig = {},
     delay: number = 0,
-    timeout: number = 1000,
+    timeout: number = 6000,
     rateLimitDuration: number = 60000
   ): Promise<any> {
     if (!this.jwtToken) {
@@ -108,7 +108,7 @@ export class HttpService {
       },
     };
     this.logger.log(`Fazendo requisição endpoint ${url} - ${method} - ${JSON.stringify(data)}`);
-    return this.rateLimitedRequest(enableDelay, requestConfig, delay, rateLimitDuration);
+    return this.rateLimitedRequest(enableDelay, requestConfig, delay, rateLimitDuration, timeout);
   }
 
 

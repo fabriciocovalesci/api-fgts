@@ -1,4 +1,0 @@
-"code","message","details","correlationId"
-"FGTS_DATA_INTEGRATION_ERROR","Não foi possível realizar o cálculo da operação.","{""registrationNumber"":""59028521615"",""personId"":null,""reason"":""Trabalhador não possui adesão ao saque aniversário vigente na data corrente."",""code"":9,""codeDisplay"":""SaqueAniversarioNaoAdesao""}","#395cb9a1-73de-45fe-a917-d4e658b0b695"
-"FGTS_DATA_INTEGRATION_ERROR","Não foi possível realizar o cálculo da operação.","{""registrationNumber"":""63040328972"",""personId"":null,""reason"":""Trabalhador não possui adesão ao saque aniversário vigente na data corrente."",""code"":9,""codeDisplay"":""SaqueAniversarioNaoAdesao""}","#c6b4baf9-3ffb-4295-8ca9-25c6cb32bb5b"
-,"Erro ao fazer requisição",,
