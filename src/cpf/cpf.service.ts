@@ -80,7 +80,13 @@ export class CpfService {
         facta_finished_at: currentDateTime,
       };
 
-      if (item.code) {
+      if(item.code === 'INVALID_AMORTIZATION_QUERY_MINIMUM_PRINCIPAL_FOR_PRODUCT'){
+        processedItem.CPF = item?.registrationNumber || '';
+        processedItem.facta_offline_saldo = AUTHORIZED;
+        processedItem.facta_offline_lib = AUTHORIZED;
+        processedItem.facta_message = item.details?.reason || item?.message || "";
+        processedItem.facta_offline_message = 'CPF autorizado'
+      } else if (item.code) {
         processedItem.CPF = item.details?.registrationNumber || '';
         processedItem.facta_offline_saldo = UNAUTHORIZED;
         processedItem.facta_offline_lib = UNAUTHORIZED;
@@ -90,9 +96,9 @@ export class CpfService {
         processedItem.facta_offline_saldo = AUTHORIZED;
         processedItem.facta_offline_lib = AUTHORIZED;
 
-        const initialValue = isBatch ? item.value.initialValue : item.initialValue;
-        const liquidValue = isBatch ? item.value.liquidValue : item.liquidValue;
-        const startDate = isBatch ? item.value.startDate : item.startDate;
+        const initialValue = isBatch ? item.value.initialValue : item.initialValue || "";
+        const liquidValue = isBatch ? item.value.liquidValue : item.liquidValue || "";
+        const startDate = isBatch ? item.value.startDate : item.startDate  || "";
         const registrationNumber = isBatch ? item.value.registrationNumber : item.registrationNumber;
         processedItem.CPF = registrationNumber;
         processedItem.facta_saldo = (initialValue / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -102,9 +108,7 @@ export class CpfService {
           const formattedDate = new Date(startDate).toLocaleDateString('pt-BR');
           processedItem.facta_offline_message += `CPF autorizado até ${formattedDate}`;
         }
-        
       }
-
       return processedItem;
     });
   }
@@ -208,9 +212,9 @@ public async processCpfBatchAndConsultExternalApiBKP(
   }
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const fileName = `consultas-batch-${timestamp}.csv`;
+  const fileName = `consultas-${timestamp}.csv`;
 
-  // this.saveToCsv(result, fileName);
+  this.saveToCsv(result, fileName);
   this.logger.log('Todos os CPFs em lotes foram consultados com sucesso');
 
   return { result, csvFile: fileName };

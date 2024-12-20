@@ -126,7 +126,9 @@ export class ExternalApiService {
 
       const errorMessage = error.response.message
       this.logger.error(`Error during FGTS simulation for CPF ${cpf}: ${errorMessage}`, error.stack);
-  
+      if (!error.response?.registrationNumber) {
+        error.response["registrationNumber"] = cpf;
+      }
       return error.response
     }
   }
