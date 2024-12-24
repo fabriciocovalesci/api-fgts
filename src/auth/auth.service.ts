@@ -16,8 +16,7 @@ export class AuthService {
     if (user && await this.usersService.validatePassword(pass, user.password)) {
       return {
         email: user.email,
-        username: user.username,
-        _id: user._id.toString(),
+        username: user.username
       };
     }
     return null;
@@ -25,7 +24,7 @@ export class AuthService {
   
 
   async login(user: any) {
-    const payload: JwtPayload = { username: user.username, sub: user._id.toString() };
+    const payload: JwtPayload = { username: user.username, sub: user.username };
     const access_token = this.jwtService.sign(payload, {
       expiresIn: '24h',
     });
