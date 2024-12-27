@@ -10,6 +10,7 @@ import { ExternalApiModule } from './external-api/external-api.module';
 import { HttpService } from './http/http.service';
 import { HttpModule } from './http/http.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ReportModule } from './reports/report.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     UsersModule,
     HttpModule,
     CpfModule,
+    ReportModule,
     ExternalApiModule
   ],
   controllers: [],

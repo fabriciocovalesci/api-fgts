@@ -5,12 +5,11 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install && npm install -g @nestjs/cli
+RUN npm install --unsafe-perm && npm install -g @nestjs/cli
 
 COPY . .
 
 RUN npm run build
-
 
 EXPOSE 3000
 

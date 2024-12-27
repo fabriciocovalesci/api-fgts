@@ -8,18 +8,22 @@ import * as bcrypt from 'bcrypt';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async createUser(userData: Partial<User>): Promise<Omit<User, 'password' | '__v' | '_id'> & { id: string }> {
+  async createUser(userData: Partial<User>): Promise<Omit<User, 'password' | '__v'>> {
     const userExists = await this.checkIfUserExists(userData.username, userData.email);
     if (userExists) {
       throw new BadRequestException('Username or email already exists');
     }
-    
     const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const user = new this.userModel({ ...userData, password: hashedPassword });
+    const user = new this.userModel({
+      ...userData,
+      password: hashedPassword,
+    });
+    
     const savedUser = await user.save();
-    const { password, _id, ...userWithoutPassword } = savedUser.toObject();
-    return { ...userWithoutPassword, id: _id.toString() };
+    const { password, ...userWithoutPassword } = savedUser.toObject();
+    return { ...userWithoutPassword};
   }
+  
   
   async checkIfUserExists(username: string, email: string): Promise<boolean> {
     const userByUsername = await this.userModel.findOne({ username }).exec();
