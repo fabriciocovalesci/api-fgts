@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --unsafe-perm && npm install -g @nestjs/cli
+RUN npm install --unsafe-perm  && npm install -g @nestjs/cli
 
 COPY . .
 
