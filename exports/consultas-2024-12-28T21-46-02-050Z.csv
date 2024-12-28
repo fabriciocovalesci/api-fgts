@@ -1,0 +1,6 @@
+"CPF";"SALDO TORAL BRUTO";"SALDO LIQUIDO ";"UY3 STATUS";"UY3 MENSAGEM";"UY3 MENSAGEM DETALHADA";"DATA"
+"22486220070";"";"";"Nao Autorizado";"CPF nao autorizado";"Trabalhador informado não possui contas de FGTS.";"2024-12-28T21:46:10.271Z"
+"01369757476";"";"";"Nao Autorizado";"CPF autorizado";"O valor da operação (R$ 492,25) é menor do que o permitido para o produto: R$ 1.000,00";"2024-12-28T21:46:20.241Z"
+"01642756490";"R$ 1.234.192,00";"R$ 1.133.063,00";"Autorizado";"CPF autorizado ate 28/12/2024";"";"2024-12-28T21:46:22.894Z"
+"70503313092";"";"";"Nao Autorizado";"CPF nao autorizado";"Trabalhador informado não possui contas de FGTS.";"2024-12-28T21:46:29.823Z"
+"67214336057";"";"";"Nao Autorizado";"CPF nao autorizado";"Trabalhador informado não possui contas de FGTS.";"2024-12-28T21:46:36.565Z"

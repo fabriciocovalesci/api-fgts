@@ -37,7 +37,7 @@ export class CpfService {
     return validCpfs;
   }
 
-  private saveToCsv(data: any[], fileName: string): string {
+  private saveToCsv_bkp(data: any[], fileName: string): string {
     try {
       const fixedHeaders = [
         'CPF',
@@ -74,59 +74,108 @@ export class CpfService {
     }
   }
   
+  private saveToCsv(data: any[], fileName: string): string {
+    try {
+      const fixedHeaders = [
+        'CPF',
+        'SALDO TORAL BRUTO',
+        'SALDO LIQUIDO ',
+        'UY3 STATUS',
+        'UY3 MENSAGEM',
+        'UY3 MENSAGEM DETALHADA',
+        'DATA'
+      ];
 
-  private processJsonData(jsonData: any[], isBatch: boolean): any[] {
+      const formattedData = data.map((item) => {
+        const formattedItem: any = {};
+        fixedHeaders.forEach((header) => {
+          formattedItem[header] = item[header] !== undefined ? item[header] : '';
+        });
+        return formattedItem;
+      });
+  
+      const opts = { fields: fixedHeaders, delimiter: ';' };
+      const csvData = parse(formattedData, opts);
+      const csvWithUtf8Bom = `\uFEFF${csvData}`;
+  
+      const filePath = path.join(__dirname, '../../exports', fileName);
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  
+      if (fs.existsSync(filePath)) {
+        this.logger.log(`Arquivo existente encontrado: ${filePath}`);
+        const existingCsv = fs.readFileSync(filePath, 'utf8');
+
+        const existingLines = existingCsv.replace(/^\uFEFF/, '').split('\n');
+        const newLines = csvWithUtf8Bom.replace(/^\uFEFF/, '').split('\n').slice(1);
+        const combinedCsv = [existingLines[0], ...existingLines.slice(1), ...newLines]
+          .filter((line, index, array) => array.indexOf(line) === index)
+          .join('\n');
+  
+        fs.writeFileSync(filePath, combinedCsv, 'utf8');
+      } else {
+        fs.writeFileSync(filePath, csvWithUtf8Bom, 'utf8');
+      }
+  
+      this.logger.log(`Arquivo CSV atualizado/salvo em: ${filePath}`);
+      return filePath;
+    } catch (err) {
+      this.logger.error('Erro ao gerar CSV:', err);
+      throw new Error('Falha ao salvar arquivo CSV');
+    }
+  }
+  
+  
+
+  private processJsonData(jsonData: any | any[], isBatch: boolean, noBatch: boolean): any[] {
     const currentDateTime = new Date().toISOString();
-
+  
     const AUTHORIZED = 'Autorizado';
     const UNAUTHORIZED = 'Nao Autorizado';
-
-    return jsonData.map((item) => {
+  
+    const dataArray = Array.isArray(jsonData) ? jsonData : [jsonData];
+  
+    return dataArray.map((item) => {
       const processedItem: any = {
         CPF: '',
-        facta_offline_saldo: '',
-        facta_offline_lib: '',
-        facta_offline_message: '',
-        facta_offline_finished_at: currentDateTime,
-        facta_saldo: '',
-        facta_lib: '',
-        facta_message: '',
-        facta_finished_at: currentDateTime,
+        'SALDO TORAL BRUTO': '',
+        'SALDO LIQUIDO': '',
+        'UY3 STATUS': '',
+        'UY3 MENSAGEM': '',
+        'UY3 MENSAGEM DETALHADA': '',
+        DATA: currentDateTime,
       };
-
-      if(item.code === 'INVALID_AMORTIZATION_QUERY_MINIMUM_PRINCIPAL_FOR_PRODUCT'){
-        processedItem.CPF = item?.registrationNumber || '';
-        processedItem.facta_offline_saldo = AUTHORIZED;
-        processedItem.facta_offline_lib = AUTHORIZED;
-        processedItem.facta_message = item.details?.reason || item?.message || "";
-        processedItem.facta_offline_message = 'CPF autorizado'
-      } else if (item.code) {
-        processedItem.CPF = item.details?.registrationNumber || '';
-        processedItem.facta_offline_saldo = UNAUTHORIZED;
-        processedItem.facta_offline_lib = UNAUTHORIZED;
-        processedItem.facta_message = item.details?.reason || item?.message || "";
-        processedItem.facta_offline_message = 'CPF nao autorizado'
+  
+      if (item?.error?.code === 'INVALID_AMORTIZATION_QUERY_MINIMUM_PRINCIPAL_FOR_PRODUCT') {
+        processedItem.CPF = item?.cpf || '';
+        processedItem['SALDO TORAL BRUTO'] = "";
+        processedItem['SALDO LIQUIDO '] = "";
+        processedItem['UY3 STATUS'] = UNAUTHORIZED;
+        processedItem['UY3 MENSAGEM DETALHADA'] = item?.error.details?.reason || item?.error.message || '';
+        processedItem['UY3 MENSAGEM'] = 'CPF autorizado';
+      } else if (item?.error?.code) {
+        processedItem.CPF = item?.cpf || '';
+        processedItem['SALDO TORAL BRUTO'] = "";
+        processedItem['SALDO LIQUIDO '] = "";
+        processedItem['UY3 STATUS'] = UNAUTHORIZED;
+        processedItem['UY3 MENSAGEM DETALHADA'] = item?.error.details?.reason || item?.error.message || '';
+        processedItem['UY3 MENSAGEM'] = 'CPF nao autorizado';
       } else {
-        processedItem.facta_offline_saldo = AUTHORIZED;
-        processedItem.facta_offline_lib = AUTHORIZED;
+        processedItem['UY3 STATUS'] = AUTHORIZED;
+  
+        const data = isBatch ? item.value : item.data || {};
+        const registrationNumber = isBatch ? item.value?.registrationNumber : item.cpf;
+        const formattedStartDate = data?.startDate ? new Date(data.startDate).toLocaleDateString('pt-BR') : '';
 
-        const initialValue = isBatch ? item.value.initialValue : item.initialValue || "";
-        const liquidValue = isBatch ? item.value.liquidValue : item.liquidValue || "";
-        const startDate = isBatch ? item.value.startDate : item.startDate  || "";
-        const registrationNumber = isBatch ? item.value.registrationNumber : item.registrationNumber;
-        processedItem.CPF = registrationNumber;
-        processedItem.facta_saldo = (initialValue / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        processedItem.facta_lib = (liquidValue / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    
-        if (startDate) {
-          const formattedDate = new Date(startDate).toLocaleDateString('pt-BR');
-          processedItem.facta_offline_message += `CPF autorizado ate ${formattedDate}`;
-        }
+        processedItem.CPF = registrationNumber || '';
+        processedItem['SALDO TORAL BRUTO'] = data?.initialValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || '';
+        processedItem['SALDO LIQUIDO '] = data?.liquidValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || '';
+        processedItem['UY3 MENSAGEM DETALHADA'] = "";
+        processedItem['UY3 MENSAGEM'] = `CPF autorizado ate ${formattedStartDate}`;
       }
       return processedItem;
     });
   }
-
+  
 
 
 private checkStatus(data: any): string {
@@ -229,17 +278,14 @@ private checkStatus(data: any): string {
       throw new NoValidCpfException();
     }
   
-    let successfulCount = 0; 
-    let errorCount = 0;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const fileName = `consultas-${timestamp}.csv`;
   
     for (const cpf of validCpfs) {
-      let success = false;
       let attempts = 0;
-      let lastError = null;
-      let errorRequest = null;
       let lastResult = null;
   
-      while (!success && attempts < teimosinha) {
+      while (attempts < teimosinha) {
         attempts++;
         try {
           this.logger.log(`Tentativa ${attempts} para o CPF ${cpf}`);
@@ -251,37 +297,32 @@ private checkStatus(data: any): string {
             rateLimitPoints,
             rateLimitDuration
           );
-          
-          let status = this.checkStatus(data);
-          errorRequest = data?.code ? data : null;
-          lastResult = { success: false, status, error: data };
-          
+  
+          const status = this.checkStatus(data);
+  
           if (status === Status.VERDE) {
-            successfulCount++;
-            lastResult = { success: true, status, data };
-            onResultCallback(cpf, lastResult);
-            success = true;
-          } else if (status === Status.AMARELO) {
-            errorCount++;
-            // onResultCallback(cpf, { success: false, status, error: errorRequest });
-          }else {
-            errorCount++;
-            // onResultCallback(cpf, { success: false, status, error: errorRequest });
+            lastResult = { cpf, success: true, status, data };
+            break; 
+          } else {
+            lastResult = { cpf, success: false, status, error: data };
           }
         } catch (error) {
-          lastError = { error: error.message };
           this.logger.error(`Erro ao consultar CPF ${cpf} na tentativa ${attempts}: ${error.message}`);
-          errorCount++;
+          lastResult = { cpf, success: false, status: 'ERROR', error: error.message };
         }
       }
   
-      if (lastResult && lastResult.success !== true) {
-        this.logger.log(`Resultado final para o CPF ${cpf}:`, lastResult);
-        onResultCallback(cpf, lastResult);
+      if (lastResult) {
+        const processedData = this.processJsonData([lastResult], false, true);
+        this.saveToCsv(processedData, fileName);
+  
+        onResultCallback(cpf, { ...lastResult, csvFile: fileName });
       }
     }
-    this.logger.log(`Processamento de CPFs concluído: ${successfulCount} sucessos e ${errorCount} erros.`);
+    this.logger.log('Todos os CPFs foram processados');
   }
+  
+  
   
   
 
@@ -413,7 +454,7 @@ public async processCpfBatchAndConsultExternalApi(
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const fileName = `consultas-${timestamp}.csv`;
-  this.saveToCsv(this.processJsonData(result, true), fileName);
+  this.saveToCsv(this.processJsonData(result, true, false), fileName);
 
   this.logger.log('Todos os CPFs em lotes foram consultados com sucesso');
   return { result, csvFile: fileName };
