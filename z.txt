@@ -1,0 +1,79 @@
+
+Tela sem cadastro ou login
+ - Tela 1 - Abelhas Sem Ferrão
+ - Tela 2 - Predadores das Abelhas
+ - Tela 3 - Nossos Chats* (o que exibir?)
+
+Telas login/cadastro/recuperação senha (telefone)
+Criterios de aceitação
+- Deve ser posssivel somente cadastro telefones +55 Brasil
+- Deve permitir recuperar senha via sms
+- Deve permitir confirmação de cadastro por email ou sms
+- Deve permitir confirmação de telefone via sms
+- Deve parar cadastros de emails ou telefones ja cadastrados
+
+
+Tela de usuarios cadastrados:
+Criterios de aceitação
+- Permitir busca por caracter
+- Exibir usuarios colaboradores
+- Permitir acessar dados dos usuarios
+- Permitir alteração de perfil do usuario Editor/Admin
+
+
+Tela de Relatorio e Cadastro das Abelhas
+Criterios de aceitação
+- Pesquisar por nome
+- Permitir visualiazr detalhes de cada abelha ao clicar no card
+- Permitir que perfil Colaborador possa editar 
+
+
+Tela Chats Global
+Criterios de aceitação
+- Exibir os regulamentos
+- Não permitir envio de figuras, emojis giffs
+- Permitir envio de fotos e videos (armazenar em bucket S3)
+- Manter estrutura de chats semelhante ao WhatsApp, com caracteristicas para perfils (Admin, Colaborador)
+- Permitir buscas no chat
+- Permitir responder chat marcados, copiar, editar, apagar proprio chat
+- Permitir quando for user Admin Excluir chato do usuario, banir
+- Usuarios banidos não devem mais poder acessar chats
+
+
+Tela de pagamentos
+- Permitir pagamentos via PIX (mercado pago)
+- Permitir pagamentos via cartao de credito (analizar ainda)
+- Permitir ADS para forçar usuarios a pagar, para remover anuncios. E receber com visualizações dos mesmos anuncios
+- Quando usuario efetua pagamento, deve ser disponibilizado App sem anuncios
+
+
+Disponibilizar App 
+ - Loja Android
+ - Loja Apple
+
+
+Tecnologias utilizadas:
+- React Native
+- JavaScript/Typescript
+- Firebase
+- AWS S3
+- Mercado Pago (PIX)
+- RevenueCat (Pagamento Cartao Credito) - em analise para confirmar
+
+
+
+
+/// FAZER
+
+Lista de cpf, com . ou - sem . ou - cpf sem 0 no inico ou com 0 no inicio completar - OK
+Dar o resultado em tempo real conforme for consultando - OK
+Poder pausar a consulta e continuar
+Poder programar a consulta para data e hora expecifica 
+Historico de consultas
+Poder recuperar o arquivo cosultado para evitar perdas 
+Poder ajustar o tamanho da consulta em lote, no caso está 10 fixo, precisamos poder controlar de 1 a 15 por lote
+Delay por lote 
+Timeout por lote
+Indicador de consultas acertivas e erros em tempo real, apenas numero de cada em somatoria 
+progressão da consulta (pode ser em numero ou %)
+Quantos cpf está incluso na consulta

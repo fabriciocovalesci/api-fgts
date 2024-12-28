@@ -11,6 +11,7 @@ import { HttpService } from './http/http.service';
 import { HttpModule } from './http/http.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ReportModule } from './reports/report.module';
+import { InterceptorsModule } from './interceptors/schedule.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ReportModule } from './reports/report.module';
     HttpModule,
     CpfModule,
     ReportModule,
+    InterceptorsModule,
     ExternalApiModule
   ],
   controllers: [],

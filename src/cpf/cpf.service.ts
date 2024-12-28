@@ -7,6 +7,13 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { parse } from 'json2csv';
 import Bottleneck from 'bottleneck';
+import { cpf } from 'cpf-cnpj-validator'; 
+
+enum Status {
+  VERDE = 'VERDE',
+  AMARELO = 'AMARELO',
+  VERMELHO = 'VERMELHO',
+}
 
 
 @Injectable()
@@ -22,6 +29,13 @@ export class CpfService {
     this.enpoint = this.configService.get('BASE_URL')
   }
 
+
+  validFormatCPF(cpfList: string[]): string[] {
+    const validCpfs = cpfList
+    .map((getCPF) => getCPF.replace(/[\.\-]/g, "")) 
+    .filter((cleanedCPF) => cpf.isValid(cleanedCPF)); 
+    return validCpfs;
+  }
 
   private saveToCsv(data: any[], fileName: string): string {
     try {
@@ -65,7 +79,7 @@ export class CpfService {
     const currentDateTime = new Date().toISOString();
 
     const AUTHORIZED = 'Autorizado';
-    const UNAUTHORIZED = 'Não Autorizado';
+    const UNAUTHORIZED = 'Nao Autorizado';
 
     return jsonData.map((item) => {
       const processedItem: any = {
@@ -91,7 +105,7 @@ export class CpfService {
         processedItem.facta_offline_saldo = UNAUTHORIZED;
         processedItem.facta_offline_lib = UNAUTHORIZED;
         processedItem.facta_message = item.details?.reason || item?.message || "";
-        processedItem.facta_offline_message = 'CPF não autorizado'
+        processedItem.facta_offline_message = 'CPF nao autorizado'
       } else {
         processedItem.facta_offline_saldo = AUTHORIZED;
         processedItem.facta_offline_lib = AUTHORIZED;
@@ -106,12 +120,25 @@ export class CpfService {
     
         if (startDate) {
           const formattedDate = new Date(startDate).toLocaleDateString('pt-BR');
-          processedItem.facta_offline_message += `CPF autorizado até ${formattedDate}`;
+          processedItem.facta_offline_message += `CPF autorizado ate ${formattedDate}`;
         }
       }
       return processedItem;
     });
   }
+
+
+
+private checkStatus(data: any): string {
+  if (data && data.code === "INVALID_AMORTIZATION_QUERY_MINIMUM_PRINCIPAL_FOR_PRODUCT") {
+    return Status.AMARELO;
+  }
+  if (data?.id) {
+    return Status.VERDE;
+  }
+  return Status.VERMELHO;
+}
+
 
   async getProductsExternalApi(timeout: number, delay: number, rateLimitPoints: number, rateLimitDuration: number) {
     try {
@@ -123,39 +150,139 @@ export class CpfService {
     }
   }
 
-  async processCpfListAndConsultExternalApi(
-    cpfList: string[], 
-    delay: number, 
-    timeout: number, 
-    rateLimitPoints: number, 
+  async processCpfListAndConsultExternalApi_bkp(
+    cpfList: string[],
+    delay: number,
+    timeout: number,
+    rateLimitPoints: number,
     rateLimitDuration: number,
-    productId: string
+    productId: string,
+    teimosinha: number,
+    onResultCallback: (cpf: string, result: any) => void
   ) {
-
-    const validationResults = this.validateCpfListUseCase.validate(cpfList);
-
-
-    const validCpfs = validationResults.filter(result => result.isValid).map(result => result.cpf);
-
+    const validCpfs = this.validFormatCPF(cpfList);
+  
     if (validCpfs.length === 0) {
       this.logger.error('Nenhum CPF válido encontrado');
-      throw new NoValidCpfException()
+      throw new NoValidCpfException();
     }
-
-    let result = [];
+  
     for (const cpf of validCpfs) {
-      const data =  await this.consultSimulation.simulationFGTS(productId, cpf, timeout, delay, rateLimitPoints, rateLimitDuration);
-      this.logger.log(`CPF ${cpf} consultado com sucesso - ${data}`);
-      result.push(data);
+      let success = false;
+      let attempts = 0;
+      let lastError = null;
+  
+      while (!success && attempts < teimosinha) {
+        attempts++;
+        try {
+          this.logger.log(`Tentativa ${attempts} para o CPF ${cpf}`);
+          const data = await this.consultSimulation.simulationFGTS(
+            productId,
+            cpf,
+            timeout,
+            delay,
+            rateLimitPoints,
+            rateLimitDuration
+          );
+  
+          if (data?.code) {
+            // A API retornou um erro (data.code indica erro)
+            lastError = data;
+            this.logger.warn(`Erro retornado pela API para o CPF ${cpf}: ${data.code}`);
+          } else {
+            // Sucesso: envia o resultado e encerra as tentativas
+            this.logger.log(`CPF ${cpf} consultado com sucesso na tentativa ${attempts}`);
+            onResultCallback(cpf, { success: true, data });
+            success = true;
+          }
+        } catch (error) {
+          // Exceção durante a consulta
+          lastError = { error: error.message };
+          this.logger.error(`Erro ao consultar CPF ${cpf} na tentativa ${attempts}: ${error.message}`);
+        }
+      }
+  
+      if (!success && lastError) {
+        // Envia o último erro após todas as tentativas falharem
+        this.logger.error(`Todas as tentativas falharam para o CPF ${cpf}`);
+        onResultCallback(cpf, { success: false, error: lastError });
+      }
     }
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const fileName = `consultas-${timestamp}.csv`;
-    this.saveToCsv(this.processJsonData(result, false), fileName);
-
-    this.logger.log('Todos os CPFs foram consultados com sucesso');
-    return { result, csvFile: fileName };
+  
+    this.logger.log('Processamento de CPFs concluído');
   }
+  
+  async processCpfListAndConsultExternalApi(
+    cpfList: string[],
+    delay: number,
+    timeout: number,
+    rateLimitPoints: number,
+    rateLimitDuration: number,
+    productId: string,
+    teimosinha: number,
+    onResultCallback: (cpf: string, result: any) => void
+  ) {
+    const validCpfs = this.validFormatCPF(cpfList);
+  
+    if (validCpfs.length === 0) {
+      this.logger.error('Nenhum CPF válido encontrado');
+      throw new NoValidCpfException();
+    }
+  
+    let successfulCount = 0; 
+    let errorCount = 0;
+  
+    for (const cpf of validCpfs) {
+      let success = false;
+      let attempts = 0;
+      let lastError = null;
+      let errorRequest = null;
+      let lastResult = null;
+  
+      while (!success && attempts < teimosinha) {
+        attempts++;
+        try {
+          this.logger.log(`Tentativa ${attempts} para o CPF ${cpf}`);
+          const data = await this.consultSimulation.simulationFGTS(
+            productId,
+            cpf,
+            timeout,
+            delay,
+            rateLimitPoints,
+            rateLimitDuration
+          );
+          
+          let status = this.checkStatus(data);
+          errorRequest = data?.code ? data : null;
+          lastResult = { success: false, status, error: data };
+          
+          if (status === Status.VERDE) {
+            successfulCount++;
+            lastResult = { success: true, status, data };
+            onResultCallback(cpf, lastResult);
+            success = true;
+          } else if (status === Status.AMARELO) {
+            errorCount++;
+            // onResultCallback(cpf, { success: false, status, error: errorRequest });
+          }else {
+            errorCount++;
+            // onResultCallback(cpf, { success: false, status, error: errorRequest });
+          }
+        } catch (error) {
+          lastError = { error: error.message };
+          this.logger.error(`Erro ao consultar CPF ${cpf} na tentativa ${attempts}: ${error.message}`);
+          errorCount++;
+        }
+      }
+  
+      if (lastResult && lastResult.success !== true) {
+        this.logger.log(`Resultado final para o CPF ${cpf}:`, lastResult);
+        onResultCallback(cpf, lastResult);
+      }
+    }
+    this.logger.log(`Processamento de CPFs concluído: ${successfulCount} sucessos e ${errorCount} erros.`);
+  }
+  
   
 
 public async processCpfBatchAndConsultExternalApiBKP(
@@ -321,4 +448,24 @@ CPF	facta_offline_saldo	facta_offline_lib	facta_offline_message	facta_offline_fi
         "financeTax": 0, //Valor de IOF que incide sob a parcela (IOF diário + parcela do IOF base)
         "payment": 0 //Valor da parcela que será pago pelo devedor no vencimento
     },
+
+
+    Lista de cpf, com . ou - sem . ou - cpf sem 0 no inico ou com 0 no inicio completar -ok
+Dar o resultado em tempo real conforme for consultando -ok 
+Poder pausar a consulta e continuar - andamento
+Poder programar a consulta para data e hora expecifica 
+Historico de consultas
+Poder recuperar o arquivo cosultado para evitar perdas 
+Poder ajustar o tamanho da consulta em lote, no caso está 10 fixo, precisamos poder controlar de 1 a 15 por lote
+Delay por lote 
+Timeout por lote
+Indicador de consultas acertivas e erros em tempo real, apenas numero de cada em somatoria 
+progressão da consulta (pode ser em numero ou %)
+Quantos cpf está incluso na consulta
+
+
+Verde = Cliente "autorizado" com saldo Disponivel para fazer a operação
+Amarelo = Cliente "não autorizado"
+Vermelho = Cliente "autorizado" ou "não autorizado" que por algum motivo não ficou no verde ou no amarelo
+
 */

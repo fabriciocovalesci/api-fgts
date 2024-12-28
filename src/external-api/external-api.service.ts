@@ -129,6 +129,7 @@ export class ExternalApiService {
       if (!error.response?.registrationNumber) {
         error.response["registrationNumber"] = cpf;
       }
+      error.response["teimosinha"] = true;
       return error.response
     }
   }

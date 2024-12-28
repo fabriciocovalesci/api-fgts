@@ -1,5 +1,5 @@
 
-import { Controller, Post, Get, Param, Body, UseGuards, UseInterceptors, UploadedFile, Res, Logger, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UseGuards, UseInterceptors, UploadedFile, Res, Logger, BadRequestException, Response } from '@nestjs/common';
 import { CpfService } from './cpf.service';
 import { RequestDto } from './dto/request.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -9,6 +9,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import * as csvParser from 'csv-parser';
 import { Express } from 'express';
 import { Readable } from 'stream';
+import { Response as ResponseExpress } from 'express';
+import { ScheduleInterceptor } from "../interceptors/schedule.interceptor";
 
 
 @Controller('fgts')
@@ -31,16 +33,35 @@ export class CpfController {
 
   @Post('consultar-cpf')
   @UseGuards(JwtAuthGuard)
-  async consultarCpf(@Body() requestDto: RequestDto) {
-    return await this.cpfService.processCpfListAndConsultExternalApi(
-      requestDto.cpfList, 
-      requestDto.delay, 
-      requestDto.timeout,
-      requestDto.rateLimitPoints,
-      requestDto.rateLimitDuration,
-      requestDto.productId
-    );
+  // @UseInterceptors(ScheduleInterceptor)
+  async consultarCpf(@Body() requestDto: RequestDto, @Res() res: ResponseExpress) {
+
+    const expressRes = res as unknown as ResponseExpress;
+
+    expressRes.setHeader('Content-Type', 'text/event-stream');
+    expressRes.setHeader('Cache-Control', 'no-cache');
+    expressRes.setHeader('Connection', 'keep-alive');
+
+    try {
+      await this.cpfService.processCpfListAndConsultExternalApi(
+        requestDto.cpfList,
+        requestDto.delay,
+        requestDto.timeout,
+        requestDto.rateLimitPoints,
+        requestDto.rateLimitDuration,
+        requestDto.productId,
+        requestDto.teimosinha,
+        (cpf, result) => {
+          expressRes.write(`data: ${JSON.stringify({ cpf, result })}\n\n`);
+        },
+      );
+    } catch (error) {
+      expressRes.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+    } finally {
+      expressRes.end();
+    }
   }
+  
 
 
   @Post('consultar-batch')

@@ -1,4 +1,4 @@
-import { IsArray, IsInt, IsNumber, IsString, Min, Max, IsOptional } from 'class-validator';
+import { IsArray, IsInt, IsNumber, IsString, Min, Max, IsOptional, IsObject } from 'class-validator';
 
 export class RequestDto {
   @IsArray()
@@ -14,17 +14,17 @@ export class RequestDto {
   @IsNumber()
   @Min(1)
   @IsOptional()
-  timeout: number;
+  timeout?: number;
 
   @IsInt()
   @Min(1)
   @IsOptional()
-  rateLimitPoints: number;
+  rateLimitPoints?: number;
 
   @IsInt()
   @Min(1)
   @IsOptional()
-  rateLimitDuration: number;
+  rateLimitDuration?: number;
 
   @IsString()
   @IsOptional()
@@ -37,4 +37,16 @@ export class RequestDto {
   @IsNumber()
   @IsOptional()
   minimumInterestRate?: number;
+
+  @IsObject()
+  @IsOptional()
+  schedule?: {
+    startDate: string;
+    endDate: string;
+  };
+
+  @IsInt()
+  @IsOptional()
+  teimosinha?: number;
 }
+
