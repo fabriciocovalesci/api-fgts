@@ -73,10 +73,16 @@ export class CpfController {
   @Post('consultar-batch')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  async consultarCpfBatch(@UploadedFile() file: Express.Multer.File, @Body() requestDto: any) {
+  async consultarCpfBatch(@UploadedFile() file: Express.Multer.File, @Body() requestDto: any, @Res() res: ResponseExpress) {
     if (!file) {
       throw new Error('File is required');
     }
+
+    const expressRes = res as unknown as ResponseExpress;
+
+    expressRes.setHeader('Content-Type', 'text/event-stream');
+    expressRes.setHeader('Cache-Control', 'no-cache');
+    expressRes.setHeader('Connection', 'keep-alive');
 
     this.logger.log(`File received: ${file.originalname}`);
 
@@ -85,16 +91,28 @@ export class CpfController {
       throw new BadRequestException('No valid CPFs found in file');
     }
 
-    return await this.cpfService.processCpfBatchAndConsultExternalApi(
-      cpfs,
-      requestDto.delay,
-      requestDto.timeout,
-      requestDto.rateLimitPoints,
-      requestDto.rateLimitDuration,
-      requestDto.productId,
-      parseFloat(requestDto.minimumInterestRate),
-      requestDto.batchSize
-    );
+    try {
+      await this.cpfService.processCpfBatchAndConsultExternalApi(
+        cpfs,
+        requestDto.traceId,
+        requestDto.delay,
+        requestDto.timeout,
+        requestDto.rateLimitPoints,
+        requestDto.rateLimitDuration,
+        requestDto.productId,
+        parseFloat(requestDto.minimumInterestRate),
+        requestDto.batchSize,
+        (result, csvFile) => {
+          expressRes.write(`data: ${JSON.stringify({ result, csvFile })}\n\n`);
+        },
+      );
+    } catch (error) {
+      expressRes.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+    } finally {
+      expressRes.end();
+    }
+
+
   }
 
 

@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import { parse } from 'json2csv';
 import Bottleneck from 'bottleneck';
 import { cpf } from 'cpf-cnpj-validator'; 
+import { ReportService } from 'src/reports/report.service';
 
 enum Status {
   VERDE = 'VERDE',
@@ -24,7 +25,8 @@ export class CpfService {
   constructor(
     private readonly validateCpfListUseCase: ValidateCpfListUseCase,
     private readonly configService: ConfigService,
-    private readonly consultSimulation: ExternalApiService
+    private readonly consultSimulation: ExternalApiService,
+    private readonly reportService: ReportService, 
   ) {
     this.enpoint = this.configService.get('BASE_URL')
   }
@@ -145,21 +147,24 @@ export class CpfService {
         DATA: currentDateTime,
       };
   
-      if (item?.error?.code === 'INVALID_AMORTIZATION_QUERY_MINIMUM_PRINCIPAL_FOR_PRODUCT') {
-        processedItem.CPF = item?.cpf || '';
+      if (item?.error?.code === 'INVALID_AMORTIZATION_QUERY_MINIMUM_PRINCIPAL_FOR_PRODUCT' || item?.code === 'INVALID_AMORTIZATION_QUERY_MINIMUM_PRINCIPAL_FOR_PRODUCT') {
+        processedItem.CPF = item?.cpf || item?.details?.registrationNumber || '';
         processedItem['SALDO TORAL BRUTO'] = "";
         processedItem['SALDO LIQUIDO '] = "";
         processedItem['UY3 STATUS'] = AUTHORIZED;
-        processedItem['UY3 MENSAGEM DETALHADA'] = item?.error.details?.reason || item?.error.message || '';
+        processedItem['UY3 MENSAGEM DETALHADA'] = item?.error?.details?.reason || item?.error?.message || item?.details?.reason || item?.message || '';
         processedItem['UY3 MENSAGEM'] = 'CPF autorizado';
-      } else if (item?.error?.code) {
-        processedItem.CPF = item?.cpf || '';
+      } 
+      else if (item?.error?.code || item?.code) {
+        processedItem.CPF = item?.cpf || item?.details?.registrationNumber || '';
         processedItem['SALDO TORAL BRUTO'] = "";
         processedItem['SALDO LIQUIDO '] = "";
         processedItem['UY3 STATUS'] = UNAUTHORIZED;
-        processedItem['UY3 MENSAGEM DETALHADA'] = item?.error.details?.reason || item?.error.message || '';
+        processedItem['UY3 MENSAGEM DETALHADA'] = item?.error?.details?.reason || item?.error?.message || item?.details?.reason || item?.message || '';
         processedItem['UY3 MENSAGEM'] = 'CPF nao autorizado';
-      } else {
+      } 
+
+      else {
         processedItem['UY3 STATUS'] = AUTHORIZED;
   
         const data = isBatch ? item.value : item.data || {};
@@ -363,7 +368,6 @@ public async processCpfBatchAndConsultExternalApiBKP(
         rateLimitDuration
       );
 
-      console.log('batchResults', batchResults);
       if (Array.isArray(batchResults)) {
         result.push(...batchResults);
     } else {
@@ -389,7 +393,7 @@ public async processCpfBatchAndConsultExternalApiBKP(
 }
 
 
-public async processCpfBatchAndConsultExternalApi(
+public async processCpfBatchAndConsultExternalApi_BKP01(
   cpfList: string[],
   delay: number,
   timeout: number,
@@ -459,6 +463,106 @@ public async processCpfBatchAndConsultExternalApi(
   this.logger.log('Todos os CPFs em lotes foram consultados com sucesso');
   return { result, csvFile: fileName };
 }
+
+
+
+public async processCpfBatchAndConsultExternalApi(
+  cpfList: string[],
+  traceId: string,
+  delay: number,
+  timeout: number,
+  rateLimitPoints: number,
+  rateLimitDuration: number,
+  productId: string,
+  minimumInterestRate: number,
+  batchSize: number,
+  callback: (result: any, csvFile: string) => void
+) {
+  const validationResults = this.validateCpfListUseCase.validate(cpfList);
+  const validCpfs = validationResults.filter((result) => result.isValid).map((result) => result.cpf);
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const fileName = `consultas-${timestamp}.csv`;
+
+  if (validCpfs.length === 0) {
+    this.logger.error('Nenhum CPF válido encontrado');
+    throw new NoValidCpfException();
+  }
+
+  const limiter = new Bottleneck({
+    maxConcurrent: batchSize,
+    minTime: rateLimitDuration / rateLimitPoints,
+  });
+
+  const limitedSimulationBatchFGTS = limiter.wrap(
+    async (batch: string[]) => {
+      try {
+        this.logger.log(`Processing batch of CPFs: ${batch.join(', ')}`);
+        const batchResults = await this.consultSimulation.simulationBatchFGTS(
+          minimumInterestRate,
+          productId,
+          batch,
+          timeout + batch.length,
+          delay,
+          rateLimitPoints,
+          rateLimitDuration
+        );
+        if (Array.isArray(batchResults)) {
+          return batchResults;
+        } else {
+          this.logger.error(`Resultados da simulação não são um array: ${JSON.stringify(batchResults)}`);
+          return { batch, error: 'Resultado não é um array' + batchResults };
+        }
+      } catch (error) {
+        this.logger.error(`Erro ao processar lote de CPFs: ${batch.join(', ')}, Erro: ${error.message}`);
+        return batch.map((cpf) => ({ error: error.message }));
+      }
+    }
+  );
+
+  for (let i = 0; i < validCpfs.length; i += batchSize) {
+    const batch = validCpfs.slice(i, i + batchSize);
+    const batchResult = await limitedSimulationBatchFGTS(batch);
+  
+
+    this.saveToCsv(this.processJsonData(batchResult, true, false), fileName);
+    const dataExists = await this.reportService.findOneByTraceId(traceId);
+    
+    const resultsToUpdate = [];
+    const resultsToCreate = [];
+  
+    if (dataExists) {
+      if (Array.isArray(batchResult)) {
+        batchResult.forEach((result) => {
+          resultsToUpdate.push(this.reportService.update(traceId, result));
+        });
+      } else {
+        resultsToUpdate.push(this.reportService.update(traceId, { result: batchResult }));
+      }
+    } else {
+      const resultsToSave = Array.isArray(batchResult) ? batchResult : [batchResult]; 
+      resultsToCreate.push({
+        traceId: traceId,
+        result: resultsToSave,
+      });
+    }
+  
+    await Promise.all(resultsToUpdate);
+  
+    if (resultsToCreate.length > 0) {
+      await this.reportService.create(resultsToCreate[0]);
+    }
+
+    if (Array.isArray(batchResult)) {
+      batchResult.forEach((result) => callback(result, fileName));
+    } else {
+      callback(batchResult, fileName);
+    }
+  }
+
+  this.logger.log('Todos os CPFs em lotes foram consultados com sucesso');
+  return { csvFile: fileName }; 
+}
+
 
 }
 

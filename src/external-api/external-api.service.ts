@@ -90,7 +90,6 @@ export class ExternalApiService {
   
     try {
       const product = await this.getProductById(productId, timeout, delay, rateLimitPoints, rateLimitDuration);
-  
       const data = {
         amortization: {
           agentCommission: {
@@ -154,7 +153,7 @@ export class ExternalApiService {
             baseValue: "InitialValue",
           },
           apr: minimumInterestRate,
-          termInMonths: 10,
+          termInMonths: 5,
           startDate: new Date().toISOString(),
           requestedAmount: 0,
           amortizationType: "fgts",
@@ -184,7 +183,6 @@ export class ExternalApiService {
       this.logger.error(`Error during FGTS simulation for CPF : ${errorMessage}`, error.stack);
   
       return {
-        cpfs,
         error: error.response,
         statusCode: error.response?.code || HttpStatus.INTERNAL_SERVER_ERROR,
       };
