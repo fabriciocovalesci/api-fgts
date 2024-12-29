@@ -22,12 +22,15 @@
 					}
 				}
 			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\": \"john\",\n    \"password\": \"123456\"\n}",
+					"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"Admin#123\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -68,7 +71,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\": \"john3\",\n    \"email\": \"jon3@gmail.com\",\n    \"password\": \"123456\"\n}",
+					"raw": "{\n    \"username\": \"admin\",\n    \"email\": \"admin@gmail.com\",\n    \"password\": \"Admin#123\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -134,7 +137,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"cpfList\": [\"22486220070\", \"01642756490\", \"01642756490\"],\n  \"timeout\": 3000,\n  \"delay\": 1500,\n  \"rateLimitPoints\": 10,\n  \"rateLimitDuration\": 60,\n  \"productName\": \"Maffezzolli Alto\"\n}\n",
+					"raw": "{\n  \"cpfList\": [\"22486220070\", \"013.697.574-76\", \"01642756490\", \"705.033.130-92\", \"672.143.360-57\"],\n  \"timeout\": 3000,\n  \"delay\": 1500,\n  \"rateLimitPoints\": 10,\n  \"rateLimitDuration\": 60,\n  \"productId\": \"cca27c8d-4f74-4dde-9bc9-438151150e75\",\n//   \"traceId\": \"rwerwer2324\",\n  \"teimosinha\": 1,\n  \"schedule\": {\n    \"startDate\": \"2024-12-28T19:02:00Z\"\n    // \"endDate\": \"2024-12-28T14:00:00Z\"\n  }\n}\n",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -155,6 +158,91 @@
 			"response": []
 		},
 		{
+			"name": "Consult CPF Agendado",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{TOKEN_JWT}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/javascript",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"cpfList\": [\"22486220070\", \"013.697.574-76\", \"01642756490\", \"705.033.130-92\", \"672.143.360-57\"],\n  \"timeout\": 3000,\n  \"delay\": 1500,\n  \"rateLimitPoints\": 10,\n  \"rateLimitDuration\": 60,\n  \"productId\": \"cca27c8d-4f74-4dde-9bc9-438151150e75\",\n  \"teimosinha\": 1,\n  \"traceId\": \"werwerwe\",\n  \"schedule\": {\n    \"startDate\": \"2024-12-29T03:07:30Z\",\n    \"endDate\": \"2024-12-28T03:05:00Z\"\n  }\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/fgts/consultar-cpf-agendado",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"fgts",
+						"consultar-cpf-agendado"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consult reports by traceId",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{TOKEN_JWT}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/javascript",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/reports/werwerwe",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"reports",
+						"werwerwe"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Consult CPF File",
 			"request": {
 				"method": "POST",
@@ -169,55 +257,20 @@
 					"mode": "formdata",
 					"formdata": [
 						{
-							"key": "file",
+							"key": "",
 							"type": "file",
-							"src": "/C:/Users/fabricio.covalesci/Desktop/cpf-teste.csv"
-						},
-						{
-							"key": "delay",
-							"value": "1000",
-							"type": "text"
-						},
-						{
-							"key": "timeout",
-							"value": "6000",
-							"type": "text"
-						},
-						{
-							"key": "rateLimitPoints",
-							"value": "10",
-							"type": "text"
-						},
-						{
-							"key": "rateLimitDuration",
-							"value": "60",
-							"type": "text"
-						},
-						{
-							"key": "productId",
-							"value": "4ac16486-57aa-4c27-bdea-2e82d2a8c0fe",
-							"type": "text"
-						},
-						{
-							"key": "minimumInterestRate",
-							"value": "0.0179999999",
-							"type": "text"
-						},
-						{
-							"key": "batchSize",
-							"value": "5",
-							"type": "text"
+							"src": []
 						}
 					]
 				},
 				"url": {
-					"raw": "{{BASE_URL}}/fgts/consultar-batch",
+					"raw": "{{BASE_URL}}/fgts/consultar-file",
 					"host": [
 						"{{BASE_URL}}"
 					],
 					"path": [
 						"fgts",
-						"consultar-batch"
+						"consultar-file"
 					]
 				}
 			},

@@ -149,7 +149,7 @@ export class CpfService {
         processedItem.CPF = item?.cpf || '';
         processedItem['SALDO TORAL BRUTO'] = "";
         processedItem['SALDO LIQUIDO '] = "";
-        processedItem['UY3 STATUS'] = UNAUTHORIZED;
+        processedItem['UY3 STATUS'] = AUTHORIZED;
         processedItem['UY3 MENSAGEM DETALHADA'] = item?.error.details?.reason || item?.error.message || '';
         processedItem['UY3 MENSAGEM'] = 'CPF autorizado';
       } else if (item?.error?.code) {

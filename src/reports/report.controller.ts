@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { ReportService } from './report.service';
 import { Report } from './report.schema';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('reports')
 export class ReportController {
@@ -16,9 +17,10 @@ export class ReportController {
     return this.reportService.findAll();
   }
 
-  @Get(':id')
-  async findById(@Param('id') id: string): Promise<Report> {
-    return this.reportService.findById(id);
+  @Get(':traceId')
+  @UseGuards(JwtAuthGuard)
+  async findById(@Param('traceId') traceId: string): Promise<Report> {
+    return this.reportService.findOneByTraceId(traceId);
   }
 
   @Put(':id')

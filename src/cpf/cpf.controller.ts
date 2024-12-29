@@ -33,7 +33,6 @@ export class CpfController {
 
   @Post('consultar-cpf')
   @UseGuards(JwtAuthGuard)
-  // @UseInterceptors(ScheduleInterceptor)
   async consultarCpf(@Body() requestDto: RequestDto, @Res() res: ResponseExpress) {
 
     const expressRes = res as unknown as ResponseExpress;
@@ -62,6 +61,13 @@ export class CpfController {
     }
   }
   
+
+  @Post('consultar-cpf-agendado')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ScheduleInterceptor)
+  async agendarConsultaCpf(@Body() requestDto: RequestDto) {
+    return { message: 'Consulta agendada com sucesso!' };
+  }
 
 
   @Post('consultar-batch')

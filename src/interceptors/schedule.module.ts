@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ScheduleInterceptor } from './schedule.interceptor';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { ReportModule } from 'src/reports/report.module';
+
 
 @Module({
-  providers: [ScheduleInterceptor, SchedulerRegistry],
-  exports: [ScheduleInterceptor],
+  imports: [ReportModule],
+  providers: [SchedulerRegistry],
+  exports: [SchedulerRegistry],
 })
 export class InterceptorsModule {}
+
+

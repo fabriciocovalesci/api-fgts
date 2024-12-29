@@ -36,6 +36,8 @@
     "class-validator": "^0.14.1",
     "cpf-cnpj-validator": "^1.0.3",
     "csv-parser": "^3.0.0",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "json2csv": "^6.0.0-alpha.2",

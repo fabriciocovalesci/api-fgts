@@ -24,16 +24,20 @@ export class ReportService {
     return report;
   }
 
-  async update(id: string, updateData: Partial<Report>): Promise<Report> {
-    const updatedReport = await this.reportModel
-      .findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
-      .exec();
-
-    if (!updatedReport) {
-      throw new NotFoundException(`Report with ID ${id} not found`);
-    }
-    return updatedReport;
+  async findOneByTraceId(traceId: string): Promise<Report | null> {
+    return await this.reportModel.findOne({ traceId: traceId });
   }
+  
+
+  async update(traceId: string, newResult: Partial<Report>): Promise<Report | null> {
+    return await this.reportModel.findOneAndUpdate(
+      { traceId: traceId },
+      { $push: { result: newResult } }, 
+      { new: true } 
+    );
+  }
+  
+  
 
   async delete(id: string): Promise<void> {
     const result = await this.reportModel.findByIdAndDelete(id).exec();

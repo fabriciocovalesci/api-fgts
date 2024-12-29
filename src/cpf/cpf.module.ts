@@ -5,15 +5,14 @@ import { CpfService } from './cpf.service';
 import { ValidateCpfListUseCase } from './use-cases/validate-cpf-list.use-case';
 import { ExternalApiModule } from 'src/external-api/external-api.module';
 import { InterceptorsModule } from 'src/interceptors/schedule.module';
-
+import { ReportModule } from 'src/reports/report.module';
 
 @Module({
-  imports: [ExternalApiModule, ScheduleModule.forRoot()], 
+  imports: [ExternalApiModule, ScheduleModule.forRoot(), InterceptorsModule,ReportModule],
   controllers: [CpfController],
   providers: [
     CpfService,
     ValidateCpfListUseCase,
-    InterceptorsModule
   ],
 })
 export class CpfModule {}
