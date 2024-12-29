@@ -11,6 +11,7 @@ import { Express } from 'express';
 import { Readable } from 'stream';
 import { Response as ResponseExpress } from 'express';
 import { ScheduleInterceptor } from "../interceptors/schedule.interceptor";
+import { ScheduleBatchInterceptor } from 'src/interceptors/schedule.batch.interceptor';
 
 
 @Controller('fgts')
@@ -66,6 +67,19 @@ export class CpfController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ScheduleInterceptor)
   async agendarConsultaCpf(@Body() requestDto: RequestDto) {
+    return { message: 'Consulta agendada com sucesso!' };
+  }
+
+
+
+  @Post('consultar-cpf-batch-agendado')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ScheduleBatchInterceptor)
+  @UseInterceptors(FileInterceptor('file'))
+  async agendarConsultaBatchCpf(@UploadedFile() file: Express.Multer.File, @Body() requestDto: any,) {
+    if (!file) {
+      throw new Error('File is required');
+    }
     return { message: 'Consulta agendada com sucesso!' };
   }
 

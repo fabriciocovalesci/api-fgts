@@ -48,9 +48,9 @@ export class ScheduleInterceptor implements NestInterceptor {
       const now = new Date();
       const nowLocal = toZonedTime(now, 'America/Sao_Paulo');
 
-      // if (startTime.getTime() < nowLocal.getTime()) {
-      //   throw new BadRequestException(`A data de início não pode estar no passado: ${startDate} ${nowLocal.toISOString()}`);
-      // }
+      if (startTime.getTime() < nowLocal.getTime()) {
+        throw new BadRequestException(`A data de início não pode estar no passado: ${startDate} ${nowLocal.toISOString()}`);
+      }
 
       const timeUntilExecution = startTime.getTime() - Date.now();
       const timeoutId = `schedule-${startTime.toISOString()}`;

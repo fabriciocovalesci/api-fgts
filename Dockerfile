@@ -1,8 +1,7 @@
 FROM node:20
 
-ENV TZ=America/Sao_Paulo
-
 RUN apt-get update && apt-get install -y tzdata
+ENV TZ="America/Sao_Paulo"
 
 WORKDIR /app
 

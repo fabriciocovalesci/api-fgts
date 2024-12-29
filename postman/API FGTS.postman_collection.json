@@ -257,20 +257,144 @@
 					"mode": "formdata",
 					"formdata": [
 						{
-							"key": "",
+							"key": "file",
 							"type": "file",
-							"src": []
+							"src": "/C:/Users/fabricio.covalesci/Desktop/cpf-teste.csv"
+						},
+						{
+							"key": "delay",
+							"value": "5000",
+							"type": "text"
+						},
+						{
+							"key": "timeout",
+							"value": "2000",
+							"type": "text"
+						},
+						{
+							"key": "rateLimitPoints",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "rateLimitDuration",
+							"value": "60",
+							"type": "text"
+						},
+						{
+							"key": "productId",
+							"value": "cca27c8d-4f74-4dde-9bc9-438151150e75",
+							"type": "text"
+						},
+						{
+							"key": "minimumInterestRate",
+							"value": "0.0179999999",
+							"type": "text"
+						},
+						{
+							"key": "batchSize",
+							"value": "2",
+							"type": "text"
+						},
+						{
+							"key": "traceId",
+							"value": "asdwqeqweqwasdsa",
+							"type": "text"
 						}
 					]
 				},
 				"url": {
-					"raw": "{{BASE_URL}}/fgts/consultar-file",
+					"raw": "{{BASE_URL}}/fgts/consultar-batch",
 					"host": [
 						"{{BASE_URL}}"
 					],
 					"path": [
 						"fgts",
-						"consultar-file"
+						"consultar-batch"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consult CPF File Agendado",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{TOKEN_JWT}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/fabricio.covalesci/Desktop/cpf-teste.csv"
+						},
+						{
+							"key": "delay",
+							"value": "5000",
+							"type": "text"
+						},
+						{
+							"key": "timeout",
+							"value": "2000",
+							"type": "text"
+						},
+						{
+							"key": "rateLimitPoints",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "rateLimitDuration",
+							"value": "60",
+							"type": "text"
+						},
+						{
+							"key": "productId",
+							"value": "cca27c8d-4f74-4dde-9bc9-438151150e75",
+							"type": "text"
+						},
+						{
+							"key": "minimumInterestRate",
+							"value": "0.0179999999",
+							"type": "text"
+						},
+						{
+							"key": "batchSize",
+							"value": "2",
+							"type": "text"
+						},
+						{
+							"key": "startDate",
+							"value": "2024-12-29T09:57:00Z",
+							"type": "text"
+						},
+						{
+							"key": "endDate",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "traceId",
+							"value": "adqweqweqwqwe",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/fgts/consultar-cpf-batch-agendado",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"fgts",
+						"consultar-cpf-batch-agendado"
 					]
 				}
 			},
